@@ -56,6 +56,9 @@ function drawScene(
     {
         u_resolution: [gl.canvas.width, gl.canvas.height],
         u_color: [Math.random(), Math.random(), Math.random(), 1],
+        //TODO resuelto, revisar el shader para ver que se agrego la variable u_translation en el
+        //Documento vs_01_translate.glsl
+        u_translation: translation,
     }
     console.log(uniforms);
 

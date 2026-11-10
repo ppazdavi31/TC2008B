@@ -71,8 +71,10 @@ function generateData(sides: number): twgl.Arrays {
     const indexData: number[] = [];
 
     // Initialize the center vertex, at the origin and with white color
+    //Coordenadas del centro del polígono
     positionData.push(0);
     positionData.push(0);
+    //Color blanco para el centro del polígono
     colorData.push(1);
     colorData.push(1);
     colorData.push(1);
@@ -90,7 +92,7 @@ function generateData(sides: number): twgl.Arrays {
         positionData.push(x);
         positionData.push(y);
 
-        // Generate a random color for the vertex
+        // Generate a random color for the vertex: RGBA
         colorData.push(Math.random());
         colorData.push(Math.random());
         colorData.push(Math.random());

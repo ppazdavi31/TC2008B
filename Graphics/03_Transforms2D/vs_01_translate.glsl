@@ -2,6 +2,7 @@
 in vec2 a_position;
 
 uniform vec2 u_resolution;
+//Esto es lo que se agrego, revisar el TODO
 uniform vec2 u_translation;
 
 vec4 projection2D(vec2 position, vec2 resolution) {
@@ -23,7 +24,7 @@ vec4 projection2D(vec2 position, vec2 resolution) {
 void main() {
     // Add the translation to the position
     // TODO:
-    vec2 position = a_position;
+    vec2 position = a_position + u_translation;
 
     gl_Position = projection2D(position, u_resolution);
 }

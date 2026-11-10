@@ -11,7 +11,7 @@
 import * as twgl from 'twgl-base.js'
 import { shapeF } from '../libs/shapes.js'
 
-// Import the shaders from external files
+// Import the shaders from external files   glsl?raw lo importa como texto plano, sin compilarlo
 import vsGLSL from './vs_00_no_transform.glsl?raw';
 import fsGLSL from './fs_flat_color.glsl?raw';
 

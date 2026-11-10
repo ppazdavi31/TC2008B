@@ -13,6 +13,7 @@ const vsGLSL = `#version 300 es
 in vec4 a_position;
 in vec4 a_color;
 
+//Varying 
 out vec4 v_color;
 
 void main() {
@@ -90,7 +91,7 @@ function generateData(): twgl.Arrays {
             */
             // To pass integer values, the type must be specified
             data: new Uint8Array([
-                255, 0, 0, 255,
+                255, 0, 0, 25,
                 0, 255, 0, 255,
                 0, 0, 255, 255,
             ]),
