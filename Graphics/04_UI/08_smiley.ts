@@ -9,7 +9,7 @@
 
 import * as twgl from 'twgl-base.js';
 import GUI from 'lil-gui';
-import { diamond, shapeF_centered, smiley } from '../libs/shapes.js';
+import { diamond, shapeF_centered, nerdFace, glasses } from '../libs/shapes.js';
 import { V2, M3, type Vec2, type Mat3 } from '../libs/2d-lib.js';
 import { Scene } from '../libs/scene.js';
 import { type Color } from '../libs/color.js';
@@ -24,11 +24,12 @@ import fsGLSL from './fs_vertex_color.glsl?raw';
  * Specifies the objects that will be used, and the UI operations available.
  */
 class RotationScene extends Scene {
+    order: string = 'scale -> rotation -> translation';  // Default order of transformations. Use 'scale -> rotation -> translation', 'scale -> translation -> rotation', 'translation -> scale -> rotation', 'rotation -> translation -> scale', or 'rotation -> scale -> translation'.
     constructor(gl: WebGL2RenderingContext) {
         super(gl, vsGLSL, fsGLSL);
 
         // Create the objects for this scene
-        const model = this.addObject('model', smiley(150),
+        const model = this.addObject('model', nerdFace(150),
             [ Math.random(), Math.random(), Math.random(), 1 ]);
         model.transforms.t.x = gl.canvas.width / 2;
         model.transforms.t.y = gl.canvas.height / 2;
@@ -37,6 +38,11 @@ class RotationScene extends Scene {
             [ 0.6, 0.6, 0.6, 1]);
         pivot.transforms.t.x = gl.canvas.width / 2;
         pivot.transforms.t.y = gl.canvas.height / 2;
+
+        const Myglasses = this.addObject('Myglasses', glasses(150),
+            [ Math.random(), Math.random(), Math.random(), 1 ]);
+        Myglasses.transforms.t.x = gl.canvas.width / 2;
+        Myglasses.transforms.t.y = gl.canvas.height / 2;
     }
 
     // Method to draw the scene.
@@ -44,6 +50,7 @@ class RotationScene extends Scene {
         const { gl, programInfo } = this;
         const model = this.getObject('model');
         const pivot = this.getObject('pivot');
+        const Myglasses = this.getObject('Myglasses');
 
         // Vector to the position of the model
         const v2_trans: Vec2 = V2.create(model.transforms.t.x, model.transforms.t.y);
@@ -58,6 +65,11 @@ class RotationScene extends Scene {
 
         // Transform matrices for the model
         // TODO: Create the matrices necessary
+        const scaleMatrix: Mat3 = M3.scale(v2_scale);
+        const pivotToCenterMatrix: Mat3 = M3.translation(v2_pivot_to_center);
+        const centerToPivotMatrix: Mat3 = M3.translation(v2_center_to_pivot);
+        const rotationMatrix: Mat3 = M3.rotation(model.transforms.rr.z);
+        const translationMatrix: Mat3 = M3.translation(v2_trans);
 
 
 
@@ -65,7 +77,52 @@ class RotationScene extends Scene {
         let modelTransforms: Mat3 = M3.identity();
         // TODO: Multiply the matrices in the correct order to obtain the required results
 
+        // The order of multiplication depends on the desired order of transformations (scale, rotate, translate).
 
+        // Order 'srt' (scale -> rotation -> translation)
+        if (this.order === 'scale -> rotation -> translation') {
+            modelTransforms = M3.multiply(scaleMatrix, modelTransforms);
+            modelTransforms = M3.multiply(pivotToCenterMatrix, modelTransforms);
+            modelTransforms = M3.multiply(rotationMatrix, modelTransforms);
+            modelTransforms = M3.multiply(centerToPivotMatrix, modelTransforms);
+            modelTransforms = M3.multiply(translationMatrix, modelTransforms);
+        }
+
+        // Order 'str' (scale -> translation -> rotation)
+        else if (this.order === 'scale -> translation -> rotation') {
+            modelTransforms = M3.multiply(scaleMatrix, modelTransforms);
+            modelTransforms = M3.multiply(translationMatrix, modelTransforms);
+            modelTransforms = M3.multiply(pivotToCenterMatrix, modelTransforms);
+            modelTransforms = M3.multiply(rotationMatrix, modelTransforms);
+            modelTransforms = M3.multiply(centerToPivotMatrix, modelTransforms);
+        }
+
+        // Order 'tsr' (translation -> scale -> rotation)
+        else if (this.order === 'translation -> scale -> rotation') {
+            modelTransforms = M3.multiply(translationMatrix, modelTransforms);
+            modelTransforms = M3.multiply(scaleMatrix, modelTransforms);
+            modelTransforms = M3.multiply(pivotToCenterMatrix, modelTransforms);
+            modelTransforms = M3.multiply(rotationMatrix, modelTransforms);
+            modelTransforms = M3.multiply(centerToPivotMatrix, modelTransforms);
+        }
+        
+        // Order 'rts' (rotation -> translation -> scale)
+        else if (this.order === 'rotation -> translation -> scale') {
+            modelTransforms = M3.multiply(pivotToCenterMatrix, modelTransforms);
+            modelTransforms = M3.multiply(rotationMatrix, modelTransforms);
+            modelTransforms = M3.multiply(centerToPivotMatrix, modelTransforms);
+            modelTransforms = M3.multiply(translationMatrix, modelTransforms);
+            modelTransforms = M3.multiply(scaleMatrix, modelTransforms);
+        }
+
+        // Order 'rst' (rotation -> scale -> translation)
+        else if (this.order === 'rotation -> scale -> translation') {
+            modelTransforms = M3.multiply(pivotToCenterMatrix, modelTransforms);
+            modelTransforms = M3.multiply(rotationMatrix, modelTransforms);
+            modelTransforms = M3.multiply(centerToPivotMatrix, modelTransforms);
+            modelTransforms = M3.multiply(scaleMatrix, modelTransforms);
+            modelTransforms = M3.multiply(translationMatrix, modelTransforms);
+        }
 
 
         gl.useProgram(programInfo.program);
@@ -78,6 +135,18 @@ class RotationScene extends Scene {
         twgl.setUniforms(programInfo, uniforms);
         gl.bindVertexArray(model.vao);
         twgl.drawBufferInfo(gl, model.bufferInfo);
+
+        let glassesTransforms: Mat3 = M3.identity();
+        glassesTransforms = M3.multiply(modelTransforms, glassesTransforms);
+
+        uniforms = {
+            u_resolution: [gl.canvas.width, gl.canvas.height],
+            u_transforms: glassesTransforms,
+            u_color: Myglasses.color,
+        };
+        twgl.setUniforms(programInfo, uniforms);
+        gl.bindVertexArray(Myglasses.vao);
+        twgl.drawBufferInfo(gl, Myglasses.bufferInfo);
 
         // Transform matrices for the pivot
         const translateMatrixPivot: Mat3 = M3.translation(v2_center_to_pivot);
@@ -102,6 +171,8 @@ class RotationScene extends Scene {
         const pivot = this.getObject('pivot');
 
         const gui = new GUI();
+
+        gui.add(this, 'order', ['scale -> rotation -> translation', 'scale -> translation -> rotation', 'translation -> scale -> rotation', 'rotation -> translation -> scale', 'rotation -> scale -> translation']);
 
         const modelFolder = gui.addFolder('Model');
 

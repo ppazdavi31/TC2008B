@@ -36,6 +36,8 @@ function main() : void {
     drawScene(gl, vao, programInfo, bufferInfo);
 }
 
+
+
 // Function to do the actual display of the objects
 function drawScene(
     gl: WebGL2RenderingContext,
