@@ -164,6 +164,15 @@ class PhongActivityScene extends Scene {
         // this.camera (see Light3D and Camera3D in ../../libs).
         //
         // twgl.setUniforms(programInfo, { /* ... */ });
+      let uniforms = {
+            u_ambientLight : this.lights[0].ambient,
+            u_diffuseLight : this.lights[0].diffuse,
+            u_specularLight : this.lights[0].specular,
+            u_lightWorldPosition : this.lights[0].posArray,
+            u_viewWorldPosition : this.camera.posArray
+        }
+
+        twgl.setUniforms(programInfo, uniforms);
 
         // Check for camera keys and update the camera position
         this.camera.checkKeys();
