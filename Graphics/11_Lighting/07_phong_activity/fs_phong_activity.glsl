@@ -52,7 +52,10 @@ void main() {
     //         when the view direction is close to the reflection
     //         direction, and sharpened by the material's shininess.
     //         Typically only meaningful when the surface faces the light.
-    float specularIntensity = max( dot(reflectionVector, surfToViewDirection), 0.0 );
+    float specularIntensity = 0.0;
+    if (diffuseIntensity > 0.0) {   // only when the surface faces the light
+        specularIntensity = pow( max( dot(reflectionVector, surfToViewDirection), 0.0 ), u_shininess );
+    }
     vec4 specularColor = specularIntensity * u_specularColor * u_specularLight;
 
     // TODO 5: Final color
